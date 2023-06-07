@@ -4,7 +4,7 @@ const Joi = require("joi");
 const { v4: uuidv4 } = require("uuid");
 const { Doctor } = require("./doctor");
 
-const Nurse = sequelize.define("nurse", {
+const Nurse = sequelize.define("Nurse", {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
@@ -43,11 +43,6 @@ function validateDoctor(nurse) {
 Nurse.beforeCreate((doctor) => {
   doctor.id = uuidv4();
 });
-
-// Nurse.belongsTo(Doctor, {
-//   foreignKey: 'doctorId',
-//   onDelete: 'CASCADE'
-// });
 
 module.exports.Nurse = Nurse;
 module.exports.validate = validateDoctor;

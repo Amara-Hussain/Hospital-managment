@@ -1,20 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { Nurse, validate } = require("../models/nurse");
+const { Patient, validate } = require("../models/patient");
 const { Doctor } = require("../models/doctor");
 
-// Get all nurses
 router.get("/", async (req, res) => {
-  try {
-    const nurses = await Nurse.findAll();
-    res.send(nurses);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
-  }
+  const patient = await Patient.findAll();
+  res.send(patient);
 });
 
-// Create a new nurse
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -25,14 +18,15 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    const nurse = await Nurse.create({
+    const pat = await Patient.create({
       name: req.body.name,
-      shift: req.body.shift,
+      age: req.body.age,
+      wardId: req.body.wardId,
       doctorId: req.body.doctorId,
     });
-    res.status(201).send(nurse);
+    res.status(200).send(pat);
   } catch (error) {
-    console.error("Creating nurse error:", error);
+    console.error("Creating patient error:", error);
     res.status(500).send("Server Error");
   }
 });
@@ -42,32 +36,32 @@ router.put("/:id", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
-    const nurse = await Nurse.findByPk(req.params.id);
-    if (!nurse) {
-      return res.status(404).send("Nurse not found");
-    }
-    await nurse.update({
+    const patient = await Patient.findByPk(req.params.id);
+    if (!patient) return res.status(404).send("Patient not found");
+
+    await patient.update({
       name: req.body.name,
-      shift: req.body.shift,
+      age: req.body.age,
+      wardId: req.body.wardId,
       doctorId: req.body.doctorId,
     });
-    res.status(200).send(nurse);
+    res.status(200).send(patient);
   } catch (error) {
-    console.error("Error updated nurse:", error);
+    console.error("Error patient updated :", error);
     res.status(500).send("Server Error");
   }
 });
 
 router.delete("/:id", async (req, res) => {
-  const nurseId = req.params.id;
   try {
-    const nurse = await Nurse.findByPk(nurseId);
-    if (!nurse) return res.status(404).send("Nurse not found");
+    const patient = await Patient.findByPk(req.params.id);
+    if (!patient)
+      return res.status(404).send("Patient with given id not found");
 
-    await nurse.destroy();
-    res.status(200).send("Nurse deleted successfully");
+    await patient.destroy();
+    res.status(200).send("Patient deleted successfully");
   } catch (error) {
-    console.error("Error nurse Delete:", error);
+    console.error("Error patient delete:", error);
     res.status(500).send("Server Error");
   }
 });

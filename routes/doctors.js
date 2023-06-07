@@ -12,19 +12,18 @@ router.post("/", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
-    const doc = new Doctor({
-      id: req.body.id,
+    const doc = await Doctor.create({
       name: req.body.name,
       shift: req.body.shift,
     });
-    res.status(201).send(doc);
+    res.status(200).send(doc);
   } catch (error) {
-    console.error("Creating doctor error:", err);
+    console.error("Creating doctor error:", error);
     res.status(500).send("Server Error");
   }
 });
 
-router.put("/id", async (req, res) => {
+router.put("/:id", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -39,20 +38,20 @@ router.put("/id", async (req, res) => {
     });
     res.status(200).send(doctor);
   } catch (error) {
-    console.error("Error doctor updated :", err);
+    console.error("Error doctor updated :", error);
     res.status(500).send("Server Error");
   }
 });
 
 router.delete("/:id", async (req, res) => {
   try {
-    const doctor = await doctor.findByPk(req.params.id);
+    const doctor = await Doctor.findByPk(req.params.id);
     if (!doctor) return res.status(404).send("Doctor with given id not found");
 
     await doctor.destroy();
     res.status(200).send("Doctor deleted successfully");
   } catch (error) {
-    console.error("Error Doctor delete");
+    console.error("Error Doctor delete:", error);
     res.status(500).send("Server Error");
   }
 });

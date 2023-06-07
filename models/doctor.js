@@ -3,11 +3,10 @@ const { DataTypes } = require("sequelize");
 const Joi = require("joi");
 const { v4: uuidv4 } = require("uuid");
 
-const Doctor = sequelize.define("doctor", {
+const Doctor = sequelize.define("Doctor", {
   id: {
     type: DataTypes.UUID,
     primaryKey: true,
-    autoIncrement: true,
   },
   name: {
     type: DataTypes.STRING,
