@@ -29,7 +29,6 @@ router.post("/", async (req, res) => {
       shift: req.body.shift,
       doctorId: req.body.doctorId,
     });
-
     res.status(201).send(nurse);
   } catch (error) {
     console.error(error);
