@@ -12,12 +12,10 @@ router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  const doc = await Doctor.findOne({ where: { id: req.body.doctorId } });
-  if (!doc) {
-    return res.status(400).send("Invalid id");
-  }
-
   try {
+    const doc = await Doctor.findOne({ where: { id: req.body.doctorId } });
+    if (!doc) return res.status(400).send("Invalid id");
+
     const pat = await Patient.create({
       name: req.body.name,
       age: req.body.age,

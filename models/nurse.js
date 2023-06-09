@@ -7,6 +7,7 @@ const { Doctor } = require("./doctor");
 const Nurse = sequelize.define("Nurse", {
   id: {
     type: DataTypes.UUID,
+    defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
   name: {

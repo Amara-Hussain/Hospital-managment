@@ -2,6 +2,7 @@ const doctor = require("../routes/doctors");
 const nurse = require("../routes/nurses");
 const patient = require("../routes/patients");
 const ward = require("../routes/wards");
+const record = require("../routes/records");
 const sync = require("../routes/sync");
 const express = require("express");
 
@@ -11,5 +12,6 @@ module.exports = function (app) {
   app.use("/api/nurses", nurse);
   app.use("/api/patients", patient);
   app.use("/api/wards", ward);
+  app.use("/api/records", record);
   app.use("/api/sync", sync);
 };

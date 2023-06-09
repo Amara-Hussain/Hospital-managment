@@ -29,9 +29,8 @@ router.put("/:id", async (req, res) => {
 
   try {
     const doctor = await Doctor.findByPk(req.params.id);
-    if (!doctor) {
-      return res.status(404).send("Doctor not found");
-    }
+    if (!doctor) return res.status(404).send("Doctor not found");
+
     await doctor.update({
       name: req.body.name,
       shift: req.body.shift,

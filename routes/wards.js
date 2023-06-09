@@ -1,6 +1,6 @@
+const { Ward, validate } = require("../models/ward");
 const express = require("express");
 const router = express.Router();
-const { Ward, validate } = require("../models/ward");
 
 // Get all wards
 router.get("/", async (req, res) => {
@@ -16,6 +16,7 @@ router.post("/", async (req, res) => {
   try {
     const ward = await Ward.create({
       name: req.body.name,
+      doctorId: req.body.doctorId,
     });
     res.status(201).send(ward);
   } catch (error) {
@@ -34,6 +35,7 @@ router.put("/:id", async (req, res) => {
 
     await ward.update({
       name: req.body.name,
+      doctorId: req.body.doctorId,
     });
     res.status(200).send(ward);
   } catch (error) {

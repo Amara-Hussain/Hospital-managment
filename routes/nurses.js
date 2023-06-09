@@ -5,13 +5,8 @@ const { Doctor } = require("../models/doctor");
 
 // Get all nurses
 router.get("/", async (req, res) => {
-  try {
-    const nurses = await Nurse.findAll();
-    res.send(nurses);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
-  }
+  const nurses = await Nurse.findAll();
+  res.send(nurses);
 });
 
 // Create a new nurse
@@ -20,9 +15,7 @@ router.post("/", async (req, res) => {
   if (error) return res.status(400).send(error.details[0].message);
 
   const doc = await Doctor.findOne({ where: { id: req.body.doctorId } });
-  if (!doc) {
-    return res.status(400).send("Invalid id");
-  }
+  if (!doc) return res.status(400).send("Invalid id");
 
   try {
     const nurse = await Nurse.create({
@@ -43,9 +36,8 @@ router.put("/:id", async (req, res) => {
 
   try {
     const nurse = await Nurse.findByPk(req.params.id);
-    if (!nurse) {
-      return res.status(404).send("Nurse not found");
-    }
+    if (!nurse) return res.status(404).send("Nurse not found");
+
     await nurse.update({
       name: req.body.name,
       shift: req.body.shift,
