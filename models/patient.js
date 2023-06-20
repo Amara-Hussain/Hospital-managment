@@ -3,23 +3,40 @@ const { DataTypes } = require("sequelize");
 const Joi = require("joi");
 const { v4: uuidv4 } = require("uuid");
 const { Ward } = require("./ward");
-const { Doctor } = require("./doctor");
 
 const Patient = sequelize.define("Patient", {
   id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
+    unique: true,
   },
-  name: {
+  firstname: {
     type: DataTypes.STRING,
-    minlength: 5,
-    maxlength: 10,
+    allowNull: false,
+    minlength: 3,
+    maxlength: 15,
+    require: true,
+  },
+  lastname: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    minlength: 3,
+    maxlength: 15,
     require: true,
   },
   age: {
     type: DataTypes.INTEGER,
+    allowNull: false,
     require: true,
+  },
+  cnic: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    validate: {
+      is: /^\d{5}-\d{7}-\d$/,
+    },
   },
   wardId: {
     type: DataTypes.UUID,
@@ -28,21 +45,15 @@ const Patient = sequelize.define("Patient", {
       key: "id",
     },
   },
-  doctorId: {
-    type: DataTypes.UUID,
-    references: {
-      model: Doctor,
-      key: "id",
-    },
-  },
 });
 
 function validateDoctor(patient) {
   const schema = Joi.object({
-    name: Joi.string().min(5).max(15).required(),
+    firstname: Joi.string().min(3).max(15).required(),
+    lastname: Joi.string().min(3).max(15).required(),
     age: Joi.number().required(),
-    wardId: Joi.string().required(),
-    doctorId: Joi.string().required(),
+    cnic: Joi.string().pattern(/^\d{5}-\d{7}-\d$/).required(),
+    wardId: Joi.string().uuid().required(),
   });
   return schema.validate(patient);
 }

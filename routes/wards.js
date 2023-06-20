@@ -4,8 +4,13 @@ const router = express.Router();
 
 // Get all wards
 router.get("/", async (req, res) => {
-  const wards = await Ward.findAll();
-  res.send(wards);
+  try {
+    const ward = await Ward.findAll();
+    res.send(ward);
+  } catch (error) {
+    console.error("ward not found:", error);
+    res.status(500).send("Server Error");
+  }
 });
 
 // Create a new ward
@@ -31,7 +36,7 @@ router.put("/:id", async (req, res) => {
 
   try {
     const ward = await Ward.findByPk(req.params.id);
-    if (!ward) return res.status(404).send("Ward not found");
+    if (!ward.length === 0) return res.status(404).send("Ward not found");
 
     await ward.update({
       name: req.body.name,
@@ -47,7 +52,8 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const ward = await Ward.findByPk(req.params.id);
-    if (!ward) return res.status(404).send("ward with given id not found");
+    if (!ward.length === 0)
+      return res.status(404).send("ward with given id not found");
 
     await ward.destroy();
     res.status(200).send("ward deleted successfully");

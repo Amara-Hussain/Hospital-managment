@@ -9,25 +9,27 @@ const Ward = sequelize.define("Ward", {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
+    unique: true,
   },
   name: {
     type: DataTypes.STRING,
+    allowNull: false,
     minlength: 5,
     require: true,
   },
-  doctorId: {
-    type: DataTypes.UUID,
-    references: {
-      model: Doctor,
-      key: "id",
-    },
-  },
+  // doctorId: {
+  //   type: DataTypes.UUID,
+  //   references: {
+  //     model: Doctor,
+  //     key: "id",
+  //   },
+  // },
 });
 
-function validateDoctor(ward) {
+function validateWard(ward) {
   const schema = Joi.object({
     name: Joi.string().min(5).max(10).required(),
-    doctorId: Joi.string().required(),
+    doctorId: Joi.string().uuid().required(),
   });
   return schema.validate(ward);
 }
@@ -37,4 +39,4 @@ Ward.beforeCreate((doctor) => {
 });
 
 module.exports.Ward = Ward;
-module.exports.validate = validateDoctor;
+module.exports.validate = validateWard;

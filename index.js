@@ -3,6 +3,7 @@ const app = express();
 
 require("./startup/routes")(app);
 require("./startup/db")();
+require("./routes/association")();
 
-const port = process.env_PORT || 1122;
+const port = process.env.PORT || 1122;
 app.listen(port, () => console.log(`you are listining on ${port}`));
