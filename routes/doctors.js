@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { Doctor, validate } = require("../models/doctor");
-const DoctorNurse = require("../models/doctornurse")
-const DoctorWard = require("../models/doctorward")
+const DoctorNurse = require("../models/doctornurse");
+const DoctorWard = require("../models/doctorward");
 
 //get all doctor
 router.get("/", async (req, res) => {
@@ -109,7 +109,5 @@ router.post("/doctor-ward", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
-
-
 
 module.exports = router;
