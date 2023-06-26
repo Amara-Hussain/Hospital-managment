@@ -53,24 +53,30 @@ const Nurse = sequelize.define("Nurse", {
       key: "id",
     },
   },
+  fullname: {
+    type: DataTypes.VIRTUAL,
+    get() {
+      return `${this.firstname} ${this.lastname}`;
+    },
+  },
 });
 
-function validateDoctor(nurse) {
+function validateNurse(nurse) {
   const schema = Joi.object({
     firstname: Joi.string().min(3).max(15).required(),
     lastname: Joi.string().min(3).max(15).required(),
     cnic: Joi.string().pattern(/^\d{5}-\d{7}-\d$/).required(),
     shift: Joi.string().min(3).max(10).required(),
     isActive: Joi.boolean().required(),
-    doctorId: Joi.string().uuid().required(),
+    doctorId: Joi.string().pattern(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).required(),
   });
 
   return schema.validate(nurse);
 }
 
-Nurse.beforeCreate((doctor) => {
-  doctor.id = uuidv4();
+Nurse.beforeCreate((nurse) => {
+  nurse.id = uuidv4();
 });
 
 module.exports.Nurse = Nurse;
-module.exports.validate = validateDoctor;
+module.exports.validate = validateNurse;

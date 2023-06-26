@@ -3,6 +3,7 @@ const router = express.Router();
 const { Doctor, validate } = require("../models/doctor");
 const DoctorNurse = require("../models/doctornurse");
 const DoctorWard = require("../models/doctorward");
+//const { Sequelize} = require("sequelize");
 
 //get all doctor
 router.get("/", async (req, res) => {
@@ -14,6 +15,24 @@ router.get("/", async (req, res) => {
     res.status(500).send("Server Error");
   }
 });
+
+// router.get('/', async (req, res) => {
+//   try {
+//     const doctors = await Doctor.findAll({
+//       attributes: [
+//         'id',
+//         [Sequelize.literal("concat(firstName, ' ', lastName)"), 'fullName'],
+//         "cnic",
+//         "shift",
+//       ]
+//     });
+
+//     res.send(doctors);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Internal Server Error');
+//   }
+// });
 
 //create doctor
 router.post("/", async (req, res) => {
