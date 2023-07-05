@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const { Patient, validate } = require("../models/patient");
 const { Ward } = require("../models/ward");
-// const { Doctor } = require("../models/doctor");
 
+//get all Patients
 router.get("/", async (req, res) => {
   try {
     const patient = await Patient.findAll();
@@ -14,6 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+//create Patient
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -36,21 +37,27 @@ router.post("/", async (req, res) => {
   }
 });
 
+//Update Patient
 router.put("/:id", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   try {
-    const patient = await Patient.findByPk(req.params.id);
-    if (!patient.length === 0) return res.status(404).send("Patient not found");
-
-    await patient.update({
+    const patient = await Patient.update(
+      {
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       age: req.body.age,
       cnic: req.body.cnic,
       wardId: req.body.wardId,
-    });
+      },
+      { where: { id: req.params.id } }
+    );
+
+    if (patient === 0) {
+      return res.status(404).send("Patient not found");
+    }
+
     res.status(200).send(patient);
   } catch (error) {
     console.error("Error patient updated :", error);
@@ -58,6 +65,8 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+
+//status is update with isActive
 router.delete("/:id", async (req, res) => {
   try {
     const patient = await Patient.findByPk(req.params.id);

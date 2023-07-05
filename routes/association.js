@@ -2,8 +2,8 @@ const { Doctor } = require("../models/doctor");
 const { Nurse } = require("../models/nurse");
 const { Ward } = require("../models/ward");
 const { Patient } = require("../models/patient");
-const DoctorNurse = require("../models/doctornurse");
-const DoctorWard = require("../models/doctorward");
+const { DoctorNurse } = require("../models/doctornurse");
+const { DoctorWard } = require("../models/doctorward");
 
 module.exports = function () {
   // Doctor and Nurse Association with DoctorNurse junction table
@@ -23,7 +23,7 @@ module.exports = function () {
   DoctorWard.belongsTo(Ward, { foreignKey: "wardId", as: "Wards" });
 
   // Patient and Doctor Association
-  Doctor.hasMany(Patient, { as: "Patients", foreignKey: "wardId" });//doctorid
+  Doctor.hasMany(Patient, { as: "Patients", foreignKey: "wardId" }); //doctorid
   Patient.belongsTo(Doctor, { as: "Doctors", foreignKey: "wardId" });
 
   // Patient and Nurse Association
@@ -53,9 +53,13 @@ module.exports = function () {
   });
 
   // Define the association between DoctorNurse and Patient
-  Patient.hasMany(DoctorNurse, { as: 'DoctorNurses', foreignKey: 'doctorId' });
-  DoctorNurse.belongsTo(Patient, { as: 'Patient', foreignKey: 'doctorId' });
-
+  Patient.hasMany(DoctorNurse, { as: "DoctorNurses", foreignKey: "doctorId" });
+  DoctorNurse.belongsTo(Patient, { as: "Patient", foreignKey: "doctorId" });
+  
+  // Doctor and Nurse Association
+  // Doctor.hasMany(Nurse, { foreignKey: "doctorId", as: "DoctorNurses" });
+  // Nurse.belongsTo(Doctor, { foreignKey: "doctorId", as: "Doctors" });
+  
   // Nurse and Ward Association
   // Ward.hasMany(Nurse, { as: "Nurses", foreignKey: "wardId" });
   // Nurse.belongsTo(Ward, { as: "Wards", foreignKey: "wardId" });

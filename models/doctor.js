@@ -45,12 +45,6 @@ const Doctor = sequelize.define("Doctor", {
     require: true,
     allowNull: false,
   },
-  fullname: {
-    type: DataTypes.VIRTUAL,
-    get() {
-      return `${this.firstname} ${this.lastname}`;
-    },
-  },
 });
 
 function validateDoctor(doctor) {

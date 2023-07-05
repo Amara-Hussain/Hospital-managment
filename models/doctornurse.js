@@ -42,5 +42,5 @@ const DoctorNurse = sequelize.define('DoctorNurse', {
     doctorNurse.id = uuidv4();
   });
   
-  module.exports = DoctorNurse;
+  module.exports.DoctorNurse = DoctorNurse;
   module.exports.validate = validateDoctorNurse;

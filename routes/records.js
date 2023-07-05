@@ -1,12 +1,12 @@
-//const { Sequelize, Op, literal, col} = require("sequelize");
+const { Sequelize } = require('sequelize');
+const sequelize = require("../config/database");
 const { Doctor } = require("../models/doctor");
 const { Nurse } = require("../models/nurse");
 const { Ward } = require("../models/ward");
 const { Patient } = require("../models/patient");
-const DoctorNurse = require("../models/doctornurse");
-const DoctorWard = require("../models/doctorward");
-const sequelize = require("../config/database");
-const Sequelize = require("sequelize");
+const {DoctorNurse} = require("../models/doctornurse");
+const {DoctorWard} = require("../models/doctorward");
+const { fn, col } = Sequelize;
 const express = require("express");
 const router = express.Router();
 
@@ -15,7 +15,6 @@ const router = express.Router();
 //     // Fetch the doctor record along with associated nurse, ward, and patient records
 //     const doctor = await Doctor.findOne({
 //       where: { id: req.params.id },
-//       //attributes:["id"],
 //       include: [
 //         {
 //           model: DoctorNurse,
@@ -59,6 +58,69 @@ const router = express.Router();
 //   }
 // });
 
+router.get("/doctor/:id", async (req, res) => {
+  try {
+    const doctor = await Doctor.findOne({
+      where: { id: req.params.id },
+      attributes: [
+        "id",
+        [fn("CONCAT", col("Doctor.firstName"), ' ', col("Doctor.lastName")), "fullName"],
+        "cnic","shift",
+      ],
+      include: [
+        {
+          model: DoctorNurse,
+          as: "DoctorNurses",
+          attributes: { exclude: ["createdAt", "updatedAt"],},
+          include: [
+            {
+              model: Nurse,
+              as: "Nurses",
+              attributes: [
+                "id",
+                [fn("CONCAT", col("DoctorNurses.Nurses.firstname"), ' ', col("DoctorNurses.Nurses.lastname")), "fullname"],
+                "cnic","shift",
+              ],
+            },
+          ],
+        },
+        {
+          model: DoctorWard,
+          as: "DoctorWards",
+          include: [
+            {
+              model: Ward,
+              as: "Wards",
+              include: [
+                {
+                  model: Patient,
+                  as: "Patients",
+                  attributes: [
+                    "id",
+                    [fn("CONCAT", col("DoctorWards.Wards.Patients.firstname"), ' ', col("DoctorWards.Wards.Patients.lastname")), "fullname"],
+                    "cnic","age",
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+
+
+    if (!doctor) {
+      return res.status(404).send("Doctor not found");
+    }
+
+    res.send(doctor);
+  } catch (error) {
+    console.error("no response", error);
+    res.status(500).send("Server Error");
+  }
+});
+
+
 // router.get("/nurse/:id", async (req, res) => {
 //   try {
 //     // Fetch the nurse record along with associated doctor, ward, and patient records
@@ -72,7 +134,7 @@ const router = express.Router();
 //           include: [
 //             {
 //               model: Doctor,
-//               as: "Doctor",
+//               as: "Doctors",
 //               include: [
 //                 {
 //                   model: DoctorWard,
@@ -109,106 +171,17 @@ const router = express.Router();
 //   }
 // });
 
-router.get("/doctor/:id", async (req, res) => {
-  try {
-    const doctor = await Doctor.findAll({
-      where: { id: req.params.id },
-      attributes: [
-        "id",
-        [
-          Sequelize.literal("concat(Doctor.firstName, ' ', Doctor.lastName)"),
-          "fullName",
-        ],
-        "cnic",
-        "shift",
-      ],
-      include: [
-        {
-          model: DoctorNurse,
-          as: "DoctorNurses",
-          include: [
-            {
-              model: Nurse,
-              as: "Nurses",
-              attributes: [
-                "id",
-                "firstname",
-                "lastname",
-                "fullname",
-                // [
-                //   Sequelize.literal(
-                //     "concat(Nurse.firstname, ' ', Nurse.lastname)"
-                //   ),
-                //   "fullname",
-                // ],
-                "cnic",
-                "shift",
-              ],
-            },
-          ],
-        },
-        {
-          model: DoctorWard,
-          as: "DoctorWards",
-          include: [
-            {
-              model: Ward,
-              as: "Wards",
-              include: [
-                {
-                  model: Patient,
-                  as: "Patients",
-                  attributes: [
-                    "id",
-                    "firstname",
-                    "lastname",
-                    "fullname",
-                    // [
-                    //   Sequelize.literal(
-                    //     "concat(Patients.firstname, ' ', Patients.lastname)"
-                    //   ),
-                    //   "fullname",
-                    // ],
-                    "cnic",
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
 
-    if (!doctor) {
-      return res.status(404).send("Doctor not found");
-    }
-
-    res.send(doctor);
-  } catch (error) {
-    console.error("no response", error);
-    res.status(500).send("Server Error");
-  }
-});
-
-//get nurse with associated doctor, ward and patient records
 router.get("/nurse/:id", async (req, res) => {
   try {
-    const nurse = await Nurse.findAll({
+    // Fetch the nurse record along with associated doctor, ward, and patient records
+    const nurse = await Nurse.findOne({
       where: { id: req.params.id },
       attributes: [
         "id",
-        [
-          sequelize.fn(
-            "CONCAT",
-            sequelize.col("Nurse.firstname"),
-            " ",
-            sequelize.col("Nurse.lastname")
-          ),
-          "fullName",
-        ],
-        "cnic",
-        "shift",
-      ],
+        [fn("CONCAT", col("Nurse.firstName"), ' ', col("Nurse.lastName")), "fullName"],
+        "cnic","shift",
+      ], 
       include: [
         {
           model: DoctorNurse,
@@ -219,19 +192,8 @@ router.get("/nurse/:id", async (req, res) => {
               as: "Doctors",
               attributes: [
                 "id",
-                "firstname",
-                "lastname",
-                // [
-                //   sequelize.fn(
-                //     "CONCAT",
-                //     sequelize.col("Doctors.firstname"),
-                //     " ",
-                //     sequelize.col("Doctors.lastname")
-                //   ),
-                //   "fullname",
-                // ],
-                "cnic",
-                "shift",
+                [fn("CONCAT", col("DoctorNurses.Doctors.firstname"), ' ', col("DoctorNurses.Doctors.lastname")), "fullname"],
+                "cnic","shift",
               ],
               include: [
                 {
@@ -247,19 +209,9 @@ router.get("/nurse/:id", async (req, res) => {
                           as: "Patients",
                           attributes: [
                             "id",
-                            "firstname",
-                            "lastname",
-                            // [
-                            //   sequelize.fn(
-                            //     "CONCAT",
-                            //     sequelize.col("Patients.firstname"),
-                            //     " ",
-                            //     sequelize.col("Patients.lastname")
-                            //   ),
-                            //   "fullname",
-                            // ],
-                            "cnic",
-                          ],
+                            [fn("CONCAT", col("DoctorNurses.Doctors.DoctorWards.Wards.Patients.firstname"), ' ', col("DoctorNurses.Doctors.DoctorWards.Wards.Patients.lastname")), "fullname"],
+                            "cnic","age",
+                          ],                       
                         },
                       ],
                     },
@@ -278,63 +230,6 @@ router.get("/nurse/:id", async (req, res) => {
 
     res.send(nurse);
   } catch (error) {
-    console.error("No response", error);
-    res.status(500).send("Server Error");
-  }
-});
-
-//Ward with associated nurse, doctor, and patient records
-router.get("/ward/:id", async (req, res) => {
-  try {
-    // Fetch the ward record along with associated nurse, doctor, and patient records
-    const ward = await Ward.findOne({
-      where: { id: req.params.id },
-      include: [
-        {
-          model: DoctorWard,
-          as: "DoctorWards",
-          include: [
-            {
-              model: Doctor,
-              as: "Doctors",
-              include: [
-                {
-                  model: DoctorNurse,
-                  as: "DoctorNurses",
-                  include: [
-                    {
-                      model: Nurse,
-                      as: "Nurses",
-                      attributes: [
-                        "id",
-                        "firstname",
-                        "lastname",
-                        "fullname",
-                        //[Sequelize.literal("CONCAT(`Nurses`.`firstname`, ' ', `Nurses`.`lastname`)"), "fullName"],
-                        "cnic",
-                        "shift",
-                      ],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        {
-          model: Patient,
-          as: "Patients",
-          attributes: ["id", "firstname", "lastname", "fullname", "cnic"],
-        },
-      ],
-    });
-
-    if (!ward) {
-      return res.status(404).send("Ward not found");
-    }
-
-    res.send(ward);
-  } catch (error) {
     console.error("no response", error);
     res.status(500).send("Server Error");
   }
@@ -352,7 +247,7 @@ router.get("/ward/:id", async (req, res) => {
 //           include: [
 //             {
 //               model: Doctor,
-//               as: "Doctor",
+//               as: "Doctors",
 //               include: [
 //                 {
 //                   model: DoctorNurse,
@@ -362,12 +257,7 @@ router.get("/ward/:id", async (req, res) => {
 //                       model: Nurse,
 //                       as: "Nurses",
 //                       attributes: [
-//                         "id",
-//                         "firstname",
-//                         "lastname",
-//                         "cnic",
-//                         "shift",
-//                       ],
+//                         "id","firstname","lastname","cnic","shift"],
 //                     },
 //                   ],
 //                 },
@@ -394,19 +284,25 @@ router.get("/ward/:id", async (req, res) => {
 //   }
 // });
 
-router.get("/patient/:id", async (req, res) => {
+router.get("/ward/:id", async (req, res) => {
   try {
-    // Fetch the patient record along with associated ward, doctor, and nurse records
-    const patient = await Patient.findOne({
+    // Fetch the ward record along with associated nurse, doctor, and patient records
+    const ward = await Ward.findOne({
       where: { id: req.params.id },
       include: [
         {
-          model: Ward,
-          as: "Wards",
+          model: DoctorWard,
+          as: "DoctorWards",
+          attributes: { exclude: ["createdAt", "updatedAt"],},
           include: [
             {
-              model: DoctorWard,
-              as: "DoctorWards",
+              model: Doctor,
+              as: "Doctors",
+              attributes: [
+                "id",
+                [fn("CONCAT", col("DoctorWards.Doctors.firstname"), ' ', col("DoctorWards.Doctors.lastname")), "fullname"],
+                "cnic","shift","isActive",
+              ],
               include: [
                 {
                   model: DoctorNurse,
@@ -417,10 +313,124 @@ router.get("/patient/:id", async (req, res) => {
                       as: "Nurses",
                       attributes: [
                         "id",
-                        "firstname",
-                        "lastname",
-                        "cnic",
-                        "shift",
+                        [fn("CONCAT", col("DoctorWards.Doctors.DoctorNurses.Nurses.firstname"), ' ', col("DoctorWards.Doctors.DoctorNurses.Nurses.lastname")), "fullname"],
+                        "cnic","shift","isActive",
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: Patient,
+          as: "Patients",
+          attributes: [
+            "id",
+            [fn("CONCAT", col("Patients.firstname"), ' ', col("Patients.lastname")), "fullname"],
+            "cnic","age",
+          ],
+        },
+      ],
+    });
+
+    if (!ward) {
+      return res.status(404).send("Ward not found");
+    }
+
+    res.send(ward);
+  } catch (error) {
+    console.error("no response", error);
+    res.status(500).send("Server Error");
+  }
+});
+
+
+
+// router.get("/patient/:id", async (req, res) => {
+//   try {
+//     // Fetch the patient record along with associated ward, doctor, and nurse records
+//     const patient = await Patient.findOne({
+//       where: { id: req.params.id },
+//       include: [
+//         {
+//           model: Ward,
+//           as: "Wards",
+//           include: [
+//             {
+//               model: DoctorWard,
+//               as: "DoctorWards",
+//               include: [
+//                 {
+//                   model: DoctorNurse,
+//                   as: "DoctorNurses",
+//                   include: [
+//                     {
+//                       model: Nurse,
+//                       as: "Nurses",
+//                       attributes: [
+//                         "id","firstname","lastname","cnic","shift",
+//                       ],
+//                     },
+//                   ],
+//                 },
+//               ],
+//             },
+//           ],
+//         },
+//       ],
+//     });
+
+//     if (!patient) {
+//       return res.status(404).send("Patient not found");
+//     }
+
+//     res.send(patient);
+//   } catch (error) {
+//     console.error("Error:", error);
+//     res.status(500).send("Server Error");
+//   }
+// });
+
+router.get("/patient/:id", async (req, res) => {
+  try {
+    const patient = await Patient.findOne({
+      where: { id: req.params.id },
+      attributes: [
+        "id",[fn("CONCAT", col("Patient.firstname"), ' ', col("Patient.lastname")), "fullname"],"cnic","age",
+      ],
+      include: [
+        {
+          model: Ward,
+          as: "Wards",
+          include: [
+            {
+              model: DoctorWard,
+              as: "DoctorWards",
+              include: [
+                {
+                  model: Doctor,
+                  as: "Doctors",
+                  attributes: [
+                    "id",
+                    [fn("CONCAT", col("Wards.DoctorWards.Doctors.firstname"), ' ', col("Wards.DoctorWards.Doctors.lastname")), "fullname"],
+                    "cnic","shift","isActive",
+                  ],
+                  include: [
+                    {
+                      model: DoctorNurse,
+                      as: "DoctorNurses",
+                      include:[
+                        {
+                          model: Nurse,
+                          as: "Nurses",
+                          attributes: [
+                            "id",
+                            [fn("CONCAT", col("Wards.DoctorWards.Doctors.DoctorNurses.Nurses.firstname"), ' ', col("Wards.DoctorWards.Doctors.DoctorNurses.Nurses.lastname")), "fullname"],
+                            "cnic","shift","isActive",
+                          ],
+                        },
                       ],
                     },
                   ],
@@ -435,137 +445,10 @@ router.get("/patient/:id", async (req, res) => {
     if (!patient) {
       return res.status(404).send("Patient not found");
     }
-
     res.send(patient);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).send("Server Error");
-  }
-});
-
-router.get("/:id", async (req, res) => {
-  try {
-    const transaction = await sequelize.transaction();
-
-    try {
-      const doctor = await Doctor.findAll({
-        where: { id: req.params.id },
-        attributes: ["id", "firstname", "lastname", "cnic", "shift"],
-        include: [
-          {
-            model: DoctorNurse,
-            as: "DoctorNurses",
-            attributes: ["id", "doctorId", "nurseId"],
-            include: [
-              {
-                model: Nurse,
-                as: "Nurses",
-                attributes: ["id", "firstname", "lastname", "cnic", "shift"],
-              },
-            ],
-          },
-          {
-            model: DoctorWard,
-            as: "DoctorWards",
-            attributes: ["id", "doctorId", "wardId"],
-            include: [
-              {
-                model: Ward,
-                as: "Wards",
-                attributes: ["id", "name"],
-                include: [
-                  {
-                    model: Patient,
-                    as: "Patients",
-                    attributes: ["id", "firstname", "lastname", "cnic", "age"],
-                  },
-                ],
-              },
-            ],
-          },
-
-          {
-            model: Ward,
-            as: "Wards",
-            attributes: ["id", "name"],
-            include: [
-              {
-                model: Doctor,
-                as: "Doctors",
-                attributes: ["id", "firstname", "lastname", "cnic", "shift"],
-              },
-              {
-                model: Nurse,
-                as: "Nurses",
-                attributes: ["id", "firstname", "lastname", "cnic", "shift"],
-              },
-              {
-                model: Patient,
-                as: "Patients",
-                attributes: ["id", "firstname", "lastname", "cnic", "age"],
-              },
-            ],
-          },
-          {
-            model: Patient,
-            as: "Patients",
-            attributes: ["id", "firstname", "lastname", "age", "cnic"],
-            include: [
-              {
-                model: Ward,
-                as: "Wards",
-                attributes: ["id", "name"],
-              },
-              {
-                model: DoctorNurse,
-                as: "DoctorNurses",
-                attributes: ["id"],
-                include: [
-                  {
-                    model: Nurse,
-                    as: "Nurses",
-                    attributes: [
-                      "id",
-                      "firstname",
-                      "lastname",
-                      "cnic",
-                      "shift",
-                    ],
-                  },
-                  {
-                    model: Doctor,
-                    as: "Doctors",
-                    attributes: [
-                      "id",
-                      "firstname",
-                      "lastname",
-                      "cnic",
-                      "shift",
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-        transaction,
-      });
-
-      if (doctor) {
-        await transaction.commit();
-        res.send(doctor);
-      } else {
-        await transaction.rollback();
-        res.status(404).send("Doctor not found");
-      }
-    } catch (error) {
-      await transaction.rollback();
-      console.error(error);
-      res.status(500).send("Server error");
-    }
-  } catch (error) {
-    console.error(error);
-    res.status(500).send("Server error");
   }
 });
 

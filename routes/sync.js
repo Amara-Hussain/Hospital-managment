@@ -2,8 +2,8 @@ const { Doctor } = require("../models/doctor");
 const { Nurse } = require("../models/nurse");
 const { Patient } = require("../models/patient");
 const { Ward } = require("../models/ward");
-const DoctorNurse = require("../models/doctornurse")
-const DoctorWard = require("../models/doctorward")
+const {DoctorNurse} = require("../models/doctornurse")
+const {DoctorWard} = require("../models/doctorward")
 const express = require("express");
 const router = express.Router();
 

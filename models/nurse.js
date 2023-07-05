@@ -30,7 +30,7 @@ const Nurse = sequelize.define("Nurse", {
     allowNull: false,
     unique: true,
     validate: {
-      is: /^\d{5}-\d{7}-\d$/,
+      is: /^\d{5}-\d{7}-\d{1}$/ 
     },
   },
   shift: {
@@ -53,19 +53,13 @@ const Nurse = sequelize.define("Nurse", {
       key: "id",
     },
   },
-  fullname: {
-    type: DataTypes.VIRTUAL,
-    get() {
-      return `${this.firstname} ${this.lastname}`;
-    },
-  },
 });
 
 function validateNurse(nurse) {
   const schema = Joi.object({
     firstname: Joi.string().min(3).max(15).required(),
     lastname: Joi.string().min(3).max(15).required(),
-    cnic: Joi.string().pattern(/^\d{5}-\d{7}-\d$/).required(),
+    cnic: Joi.string().pattern(/^\d{5}-\d{7}-\d{1}$/).required(),
     shift: Joi.string().min(3).max(10).required(),
     isActive: Joi.boolean().required(),
     doctorId: Joi.string().pattern(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/).required(),

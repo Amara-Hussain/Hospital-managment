@@ -3,7 +3,7 @@ const router = express.Router();
 const { Nurse, validate } = require("../models/nurse");
 const { Doctor } = require("../models/doctor");
 
-// Get all nurses
+// Get all Nurses
 router.get("/", async (req, res) => {
   try {
     const nurses = await Nurse.findAll({ where: { isActive: true } });
@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Create a new nurse
+// Create Nurse
 router.post("/", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -38,6 +38,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+//Update Nurse
 router.put("/:id", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -66,6 +67,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+//status is update with isActive
 router.delete("/:id", async (req, res) => {
   try {
     const nurses = await Nurse.findAll({ where: { id: req.params.id } }); 

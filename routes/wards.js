@@ -30,6 +30,7 @@ router.post("/", async (req, res) => {
   }
 });
 
+//Update Ward
 router.put("/:id", async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
@@ -49,6 +50,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+//Delete Ward
 router.delete("/:id", async (req, res) => {
   try {
     const ward = await Ward.findByPk(req.params.id);
